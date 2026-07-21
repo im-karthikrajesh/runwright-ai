@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "runwright"
+version = "0.1.0"
+description = "AI-powered CI failure intelligence and reusable developer runbooks."
+requires-python = ">=3.12"
+license = "Apache-2.0"
+authors = [
+    { name = "Karthik Rajesh", email = "karthik_rajesh@outlook.com" }
+]
+keywords = [
+    "ci-cd",
+    "github-actions",
+    "llm",
+    "rag",
+    "developer-tools",
+    "runbooks",
+]
+
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic-settings",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx2",
+    "mypy",
+    "pytest",
+    "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/im-karthikrajesh/runwright-ai"
+Repository = "https://github.com/im-karthikrajesh/runwright-ai"
+Issues = "https://github.com/im-karthikrajesh/runwright-ai/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
