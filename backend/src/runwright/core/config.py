@@ -16,6 +16,8 @@ class Settings(BaseSettings):
 
     environment: Literal["development", "test", "production"] = "development"
 
+    database_url: SecretStr | None = None
+
     llm_provider: Literal["disabled", "openrouter"] = "disabled"
     openrouter_api_key: SecretStr | None = None
     openrouter_model: str | None = None

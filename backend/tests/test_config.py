@@ -7,6 +7,7 @@ from runwright.core.config import Settings
 
 ENVIRONMENT_VARIABLES = (
     "ENVIRONMENT",
+    "DATABASE_URL",
     "LLM_PROVIDER",
     "OPENROUTER_API_KEY",
     "OPENROUTER_MODEL",
@@ -32,6 +33,7 @@ def test_settings_use_safe_defaults(
     settings = Settings()
 
     assert settings.environment == "development"
+    assert settings.database_url is None
     assert settings.llm_provider == "disabled"
     assert settings.openrouter_api_key is None
     assert settings.openrouter_model is None
@@ -68,3 +70,21 @@ def test_settings_reject_unknown_llm_provider(
 
     with pytest.raises(ValidationError):
         Settings()
+
+
+def test_settings_load_database_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    clear_runwright_environment(monkeypatch)
+    monkeypatch.chdir(tmp_path)
+
+    database_url = (
+        "postgresql+psycopg://runwright:runwright@localhost:5432/runwright"
+    )
+    monkeypatch.setenv("DATABASE_URL", database_url)
+
+    settings = Settings()
+
+    assert settings.database_url is not None
+    assert settings.database_url.get_secret_value() == database_url
