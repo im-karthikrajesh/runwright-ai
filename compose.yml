@@ -1,0 +1,12 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: runwright-api:local
+    container_name: runwright-api
+    environment:
+      ENVIRONMENT: development
+      LLM_PROVIDER: disabled
+    ports:
+      - "8000:8000"
