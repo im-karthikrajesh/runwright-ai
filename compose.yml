@@ -10,3 +10,18 @@ services:
       LLM_PROVIDER: disabled
     ports:
       - "8000:8000"
+
+  database:
+    image: pgvector/pgvector:0.8.2-pg17-bookworm
+    container_name: runwright-db
+    environment:
+      POSTGRES_DB: runwright
+      POSTGRES_USER: runwright
+      POSTGRES_PASSWORD: runwright
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - runwright_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  runwright_postgres_data:
