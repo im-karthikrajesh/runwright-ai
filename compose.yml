@@ -7,9 +7,13 @@ services:
     container_name: runwright-api
     environment:
       ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://runwright:runwright@database:5432/runwright
       LLM_PROVIDER: disabled
     ports:
       - "8000:8000"
+    depends_on:
+      database:
+        condition: service_healthy
 
   database:
     image: pgvector/pgvector:0.8.2-pg17-bookworm
@@ -22,6 +26,12 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - runwright_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U runwright -d runwright" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
 volumes:
   runwright_postgres_data:
