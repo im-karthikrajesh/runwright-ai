@@ -1,11 +1,49 @@
-from fastapi.testclient import TestClient
+from collections.abc import Generator
 
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from runwright.db.base import Base
+from runwright.db.dependencies import get_database_session
 from runwright.main import app
 
-client = TestClient(app)
+
+@pytest.fixture
+def client() -> Generator[TestClient, None, None]:
+    engine = create_engine(
+        "sqlite+pysqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(
+        bind=engine,
+        class_=Session,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+    def override_database_session() -> Generator[Session, None, None]:
+        with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_database_session] = override_database_session
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+    app.dependency_overrides.clear()
+    engine.dispose()
 
 
-def test_analyze_ci_log_returns_structured_diagnosis() -> None:
+def test_analyze_ci_log_returns_structured_diagnosis(
+    client: TestClient,
+) -> None:
     response = client.post(
         "/analysis/logs",
         json={
@@ -30,7 +68,9 @@ def test_analyze_ci_log_returns_structured_diagnosis() -> None:
     assert response_body["evidence"][0]["line_number"] == 2
 
 
-def test_analyze_ci_log_rejects_empty_log() -> None:
+def test_analyze_ci_log_rejects_empty_log(
+    client: TestClient,
+) -> None:
     response = client.post(
         "/analysis/logs",
         json={
